@@ -7,7 +7,7 @@ interface ExpressionNode
     /**
      * Compile the node to a string executable by the engine.
      *
-     * @param array<string, mixed> $context
+     * @param array<string, int|float|string|bool|object> $context
      * @return string
      */
     public function compile(array $context): string;

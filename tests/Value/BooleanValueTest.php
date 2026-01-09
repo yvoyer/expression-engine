@@ -13,6 +13,13 @@ final class BooleanValueTest extends TestCase
         self::assertFalse(BooleanValue::fromBoolean(false)->toBoolean());
     }
 
+    public function test_it_should_be_castable_to_string(): void
+    {
+        self::assertTrue(BooleanValue::fromBoolean(true)->isCastableToString());
+        self::assertSame('true', BooleanValue::fromBoolean(true)->toString());
+        self::assertSame('false', BooleanValue::fromBoolean(false)->toString());
+    }
+
     public function test_it_should_return_readable_value(): void
     {
         self::assertSame('Boolean(true)', BooleanValue::fromBoolean(true)->toHumanReadable());

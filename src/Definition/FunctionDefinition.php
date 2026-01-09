@@ -8,8 +8,6 @@ use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
-use function array_values;
-use function count;
 use function func_get_args;
 use function sprintf;
 
@@ -39,28 +37,26 @@ final class FunctionDefinition
     {
         return new ExpressionFunction(
             $this->name,
-            function (): string {
+            function (): mixed {
                 $compiler = $this->compiler;
                 return $compiler(...func_get_args());
             },
-            function (): int|float|string|bool {
+            function (
+                array $context,
+                mixed ...$arguments,
+            ): int|float|string|bool|object {
                 $evaluator = $this->evaluator;
-                $args = func_get_args();
-                $context = [];
-                if (count($args) > 0) {
-                    $context = $args[0];
-                    unset($args[0]);
-                }
-                $arguments = array_values($args);
-
+                /**
+                 * @var int|float|string|bool|object|array<string, mixed> $result
+                 */
                 $result = $evaluator(
                     $context, // todo wrap in object
                     FunctionArguments::fromCollection(
                         $this->name,
                         ...array_map(
                             function (
-                                $value,
-                                $position,
+                                int|float|string|bool|object|array $value,
+                                int $position,
                             ) use (
                                 $arguments,
                             ): FunctionArgument {

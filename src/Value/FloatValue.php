@@ -28,7 +28,6 @@ final readonly class FloatValue implements ExpressionValue
 
     public function isCastableToFloat(): bool
     {
-
         return true;
     }
 
@@ -39,7 +38,6 @@ final readonly class FloatValue implements ExpressionValue
 
     public function isCastableToString(): bool
     {
-
         return true;
     }
 

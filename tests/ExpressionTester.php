@@ -26,9 +26,11 @@ final readonly class ExpressionTester
         return $this;
     }
 
+    /**
+     * @param array<string, int|float|string|bool|object|array<string,mixed>> $context
+     */
     public function evaluate(string $expression, array $context = []): ResultAssertion
     {
-
         return new ResultAssertion(
             $this->runtime->evaluate($expression, $context),
         );

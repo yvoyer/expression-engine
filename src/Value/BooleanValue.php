@@ -23,6 +23,16 @@ final readonly class BooleanValue implements ExpressionValue
         return $this->value;
     }
 
+    public function isCastableToString(): bool
+    {
+        return true;
+    }
+
+    public function toString(): string
+    {
+        return $this->value ? 'true' : 'false';
+    }
+
     public function toHumanReadable(): string
     {
         return sprintf('Boolean(%s)', ($this->value) ? 'true' : 'false');

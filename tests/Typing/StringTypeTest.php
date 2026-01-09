@@ -15,8 +15,8 @@ final class StringTypeTest extends TestCase
     public function test_value_should_be_valid(): void
     {
         $type = $this->createType();
-        self::assertFalse($type->isValidValue(BooleanValue::fromBoolean(true)));
-        self::assertFalse($type->isValidValue(BooleanValue::fromBoolean(false)));
+        self::assertTrue($type->isValidValue(BooleanValue::fromBoolean(true)));
+        self::assertTrue($type->isValidValue(BooleanValue::fromBoolean(false)));
         self::assertTrue($type->isValidValue(IntegerValue::fromInteger(123)));
         self::assertTrue($type->isValidValue(FloatValue::fromFloat(12.34)));
         self::assertTrue($type->isValidValue(StringValue::fromString('Value')));

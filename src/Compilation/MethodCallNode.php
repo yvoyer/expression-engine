@@ -6,16 +6,17 @@ use function array_map;
 use function implode;
 use function sprintf;
 
-final readonly class FunctionNode implements ExpressionNode
+final readonly class MethodCallNode implements ExpressionNode
 {
     /**
-     * @var ArgumentNode[]
+     * @var MethodArgument[]
      */
     private array $arguments;
 
     public function __construct(
-        private string $name,
-        ArgumentNode ...$arguments,
+        private string $variable,
+        private string $method,
+        MethodArgument ...$arguments
     ) {
         $this->arguments = $arguments;
     }
@@ -23,12 +24,13 @@ final readonly class FunctionNode implements ExpressionNode
     public function compile(array $context): string
     {
         return sprintf(
-            '%s(%s)',
-            $this->name,
+            '%s.%s(%s)',
+            $this->variable,
+            $this->method,
             implode(
                 ', ',
                 array_map(
-                    function (ArgumentNode $node) use ($context): string {
+                    function (MethodArgument $node) use ($context): string {
                         return $node->compile($context);
                     },
                     $this->arguments,

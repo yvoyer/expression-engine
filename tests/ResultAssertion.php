@@ -4,6 +4,7 @@ namespace Star\Component\ExpressionEngine\Tests;
 
 use Star\Component\ExpressionEngine\Value\BooleanValue;
 use Star\Component\ExpressionEngine\Value\ExpressionValue;
+use Star\Component\ExpressionEngine\Value\FloatValue;
 use Star\Component\ExpressionEngine\Value\IntegerValue;
 use Star\Component\ExpressionEngine\Value\StringValue;
 use PHPUnit\Framework\Assert;
@@ -19,6 +20,14 @@ final readonly class ResultAssertion
     {
         Assert::assertInstanceOf(IntegerValue::class, $this->value);
         Assert::assertSame($expected, $this->value->toInteger());
+
+        return $this;
+    }
+
+    public function assertValueIsFloat(float $expected): self
+    {
+        Assert::assertInstanceOf(FloatValue::class, $this->value);
+        Assert::assertSame($expected, $this->value->toFloat());
 
         return $this;
     }

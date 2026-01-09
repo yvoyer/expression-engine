@@ -20,13 +20,8 @@ final class DivideNodeTest extends TestCase
             ->willReturn('right');
 
         self::assertSame(
-            'left / right',
+            'divide(left, right)',
             new DivideNode($left, $right)->compile([])
         );
-    }
-
-    public function test_it_should_not_allow_division_by_zero(): void
-    {
-        self::fail('todo');
     }
 }

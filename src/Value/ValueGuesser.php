@@ -11,7 +11,7 @@ use function sprintf;
 final class ValueGuesser
 {
     public static function guessScalar(
-        string|int|float|bool $value,
+        string|int|float|bool|object $value,
     ): ExpressionValue {
         if (is_int($value)) {
             return IntegerValue::fromInteger($value);

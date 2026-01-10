@@ -1,0 +1,38 @@
+{
+    "name": "star/expression-engine",
+    "description": "Expression engine based of Symfony Expression that allow type validation and strict definitions.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.4",
+        "beberlei/assert": "^3.3",
+        "symfony/expression-language": "^7.4|^8.0"
+    },
+    "require-dev": {
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-beberlei-assert": "^2.0",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^12.5",
+        "squizlabs/php_codesniffer": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Star\\Component\\ExpressionEngine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Star\\Component\\ExpressionEngine\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "bin-dir": "bin",
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    }
+}

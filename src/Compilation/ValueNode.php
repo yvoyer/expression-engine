@@ -13,6 +13,6 @@ final readonly class ValueNode implements ExpressionNode
 
     public function compile(array $context): string
     {
-        return $this->value->toString();
+        return $this->value->toCompiledString();
     }
 }

@@ -16,7 +16,7 @@ use function sprintf;
  *
  * Definition: divide(Integer $dividend, Integer $divisor): Float
  */
-final class DivideFunction implements ExpressionFunction
+final readonly class DivideFunction implements ExpressionFunction
 {
     public function createDefinition(): FunctionDefinition
     {
@@ -45,7 +45,7 @@ final class DivideFunction implements ExpressionFunction
                     return 0.0;
                 }
 
-                return ValueGuesser::guessScalar(
+                return ValueGuesser::guessValue(
                     $dividend->toInteger() / $divisor->toInteger()
                 )->toFloat();
             },

@@ -20,12 +20,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Star\\Component\\ExpressionEngine\\": "src/"
+            "Star\\Component\\ExpressionEngine\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Star\\Component\\ExpressionEngine\\Tests\\": "tests/"
+            "Star\\Component\\ExpressionEngine\\Tests\\": "tests"
         }
     },
     "config": {

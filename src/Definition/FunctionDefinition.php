@@ -77,7 +77,7 @@ final class FunctionDefinition
                         }
 
                         return $this->arguments[$position]->createArgument(
-                            ValueGuesser::guessScalar($value)
+                            ValueGuesser::guessValue($value)
                         );
                     },
                     $arguments,

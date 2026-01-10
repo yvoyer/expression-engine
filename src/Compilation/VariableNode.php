@@ -24,6 +24,9 @@ final readonly class VariableNode implements ExpressionNode
             );
         }
 
-        return ValueGuesser::guessScalar($context[$this->name])->toString();
+        return sprintf(
+            '%s',
+            ValueGuesser::guessValue($context[$this->name])->toCompiledString()
+        );
     }
 }

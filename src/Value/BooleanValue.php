@@ -38,6 +38,11 @@ final readonly class BooleanValue implements ExpressionValue
         return sprintf('Boolean(%s)', ($this->value) ? 'true' : 'false');
     }
 
+    public function toCompiledString(): string
+    {
+        return $this->toString();
+    }
+
     public static function fromBoolean(bool $value): ExpressionValue
     {
         return new self($value);

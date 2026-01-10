@@ -28,6 +28,11 @@ final readonly class StringValue implements ExpressionValue
         return sprintf('String(%s)', $this->value);
     }
 
+    public function toCompiledString(): string
+    {
+        return sprintf('"%s"', $this->value);
+    }
+
     public static function fromString(string $value): ExpressionValue
     {
         return new self($value);

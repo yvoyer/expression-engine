@@ -2,29 +2,15 @@
 
 namespace Star\Component\ExpressionEngine;
 
-use Star\Component\ExpressionEngine\Compilation\ArgumentNode;
-use Star\Component\ExpressionEngine\Compilation\ExpressionNode;
-use Star\Component\ExpressionEngine\Compilation\FunctionNode;
-use Star\Component\ExpressionEngine\Compilation\IllegalArrayAccess;
-use Star\Component\ExpressionEngine\Compilation\Math\AddNode;
-use Star\Component\ExpressionEngine\Compilation\Math\DivideNode;
-use Star\Component\ExpressionEngine\Compilation\Math\MultiplyNode;
-use Star\Component\ExpressionEngine\Compilation\Math\OperatorNode;
-use Star\Component\ExpressionEngine\Compilation\Math\SubtractNode;
-use Star\Component\ExpressionEngine\Compilation\MethodArgument;
-use Star\Component\ExpressionEngine\Compilation\MethodCallNode;
-use Star\Component\ExpressionEngine\Compilation\NotNode;
-use Star\Component\ExpressionEngine\Compilation\PropertyCallNode;
-use Star\Component\ExpressionEngine\Compilation\ValueNode;
-use Star\Component\ExpressionEngine\Compilation\VariableNode;
+use Star\Component\ExpressionEngine\Compilation;
 use Star\Component\ExpressionEngine\Functions\ExpressionFunction;
 use Star\Component\ExpressionEngine\Value\ExpressionValue;
 use Star\Component\ExpressionEngine\Value\ValueGuesser;
-use RuntimeException;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\Node;
 use function array_keys;
 use function get_class;
+use function preg_replace;
 use function sprintf;
 
 final readonly class ExpressionRuntime
@@ -43,12 +29,19 @@ final readonly class ExpressionRuntime
     }
 
     /**
-     * @param array<string, int|float|string|bool|object|array<string,mixed>> $context
+     * @param array<string, int|float|string|bool|object|array<int|string, mixed>> $context
      */
     public function evaluate(
         string $expression,
         array $context = [],
     ): ExpressionValue {
+        $corrections = [
+            '/(?<![=!<>])=(?![=<>])/' => '==', // = to ==. We do not allow assignments anyway
+        ];
+        foreach ($corrections as $pattern => $replacement) {
+            $expression = (string) preg_replace($pattern, $replacement, $expression);
+        }
+
         $parsedExpression = $this->env->parse($expression, array_keys($context));
         $node = $parsedExpression->getNodes();
         $compiled = $this->compileNode($node);
@@ -61,7 +54,7 @@ final readonly class ExpressionRuntime
             $context,
         );
 
-        return ValueGuesser::guessScalar($result);
+        return ValueGuesser::guessValue($result);
     }
 
     /**
@@ -76,49 +69,168 @@ final readonly class ExpressionRuntime
         return $this->env->compile($expression, $context);
     }
 
-    private function compileNode(Node\Node $node): ExpressionNode
+    private function compileNode(Node\Node $node): Compilation\ExpressionNode
     {
         if ($node instanceof Node\BinaryNode) {
             return match ($node->attributes['operator']) {
-                '+' => new AddNode(
+                '+' => new Compilation\Number\AddNode(
                     $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
                     $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
-                '-' => new SubtractNode(
+                '-' => new Compilation\Number\SubtractNode(
                     $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
                     $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
-                '*' => new MultiplyNode(
+                '*' => new Compilation\Number\MultiplyNode(
                     $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
                     $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
-                '/' => new DivideNode(
+                '/' => new Compilation\Number\DivideNode(
                     $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
                     $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
-
-                default => throw new RuntimeException(
+                '**' => new Compilation\Number\PowerNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '..' => new Compilation\Number\RangeNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '==' => new Compilation\Comparator\EqualNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '!=' => new Compilation\Comparator\NotEqualNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '>' => new Compilation\Number\GreaterNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '>=' => new Compilation\Number\GreaterEqualNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '<' => new Compilation\Number\LessNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '<=' => new Compilation\Number\LessEqualNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                'in' => new Compilation\Comparator\InNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                'not in' => new Compilation\Comparator\NotInNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '||', 'or' => new Compilation\Comparator\OrNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '^' => new Compilation\Bitwise\XOrNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '&&', 'and' => new Compilation\Comparator\AndNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                'contains' => new Compilation\Text\ContainNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                'starts with' => new Compilation\Text\StartsWithNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                'ends with' => new Compilation\Text\EndsWithNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '>>' => new Compilation\Bitwise\ShiftRightNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '<<' => new Compilation\Bitwise\ShiftLeftNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '|' => new Compilation\Bitwise\OrBitNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '&' => new Compilation\Bitwise\AndBitNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '%' => new Compilation\Number\ModuloNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                '~' => new Compilation\Text\ConcatNode(
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
+                ),
+                default => throw new Compilation\InvalidSyntax(
                     sprintf(
-                        'Operator of type "%s" is not supported yet.',
+                        'Operator of type "%s" is not supported.',
                         $node->attributes['operator'] // @phpstan-ignore-line
                     )
                 ),
             };
         } elseif ($node instanceof Node\UnaryNode) {
-            return match ($node->attributes['operator']) { // @phpstan-ignore-line
-                '!', 'not' => new NotNode($this->compileNode($node->nodes['node'])), // @phpstan-ignore-line
-                '-', '+' => new OperatorNode(
+            return match ($node->attributes['operator']) {
+                '!', 'not' => new Compilation\Comparator\NotNode(
+                    $this->compileNode($node->nodes['node']), // @phpstan-ignore-line
+                ),
+                '-', '+' => new Compilation\Number\OperatorNode(
                     (string) $node->attributes['operator'], // @phpstan-ignore-line
                     $this->compileNode($node->nodes['node']), // @phpstan-ignore-line
                 ),
+                '~' => new Compilation\Bitwise\NotBitNode(
+                    $this->compileNode($node->nodes['node']), // @phpstan-ignore-line
+                ),
+                default => throw new Compilation\InvalidSyntax(
+                    sprintf(
+                        'Operator of type "%s" is not supported.',
+                        $node->attributes['operator'] // @phpstan-ignore-line
+                    )
+                ),
             };
+        } elseif ($node instanceof Node\ArrayNode) {
+            $elements = [];
+            foreach ($node->nodes as $key => $arg) {
+                /**
+                 * @var int $key
+                 */
+                if ($key % 2 === 1) {
+                    $elements[] = $this->compileNode($arg); // @phpstan-ignore-line
+                }
+            }
+
+            return new Compilation\ArrayOfNodes(...$elements);
         } elseif ($node instanceof Node\ConstantNode) {
-            return new ValueNode(ValueGuesser::guessScalar($node->attributes['value'])); // @phpstan-ignore-line
+            return new Compilation\ValueNode(
+                ValueGuesser::guessValue($node->attributes['value']) // @phpstan-ignore-line
+            );
         } elseif ($node instanceof Node\NameNode) {
-            return new VariableNode($node->attributes['name']); // @phpstan-ignore-line
+            return new Compilation\VariableNode($node->attributes['name']); // @phpstan-ignore-line
         } elseif ($node instanceof Node\GetAttrNode) {
             if ($node->attributes['type'] === Node\GetAttrNode::PROPERTY_CALL) {
-                return new PropertyCallNode(
+                return new Compilation\PropertyCallNode(
+                    (string) $node->nodes['node']->attributes['name'], // @phpstan-ignore-line
+                    (string) $node->nodes['attribute']->attributes['value'], // @phpstan-ignore-line
+                );
+            }
+
+            if ($node->attributes['type'] === Node\GetAttrNode::ARRAY_CALL) {
+                return new Compilation\ArrayAccessNode(
                     (string) $node->nodes['node']->attributes['name'], // @phpstan-ignore-line
                     (string) $node->nodes['attribute']->attributes['value'], // @phpstan-ignore-line
                 );
@@ -132,7 +244,7 @@ final readonly class ExpressionRuntime
                      * @var int $key
                      */
                     if ($key % 2 === 1) {
-                        $arguments[] = new MethodArgument(
+                        $arguments[] = new Compilation\MethodArgument(
                             $position,
                             $this->compileNode($arg) // @phpstan-ignore-line
                         );
@@ -140,27 +252,33 @@ final readonly class ExpressionRuntime
                     }
                 }
 
-                return new MethodCallNode(
+                return new Compilation\MethodCallNode(
                     (string) $node->nodes['node']->attributes['name'], // @phpstan-ignore-line
                     (string) $node->nodes['attribute']->attributes['value'], // @phpstan-ignore-line
                     ...$arguments,
                 );
             }
 
-            throw new IllegalArrayAccess('Cannot access variable using "[]".');
+            throw new Compilation\IllegalArrayAccess('Cannot access variable using "[]".');
         } elseif ($node instanceof Node\FunctionNode) {
             $arguments = [];
             foreach ($node->nodes['arguments']->nodes as $arg) { // @phpstan-ignore-line
-                $arguments[] = new ArgumentNode($this->compileNode($arg)); // @phpstan-ignore-line
+                $arguments[] = new Compilation\ArgumentNode($this->compileNode($arg)); // @phpstan-ignore-line
             }
 
-            return new FunctionNode(
+            return new Compilation\FunctionNode(
                 $node->attributes['name'], // @phpstan-ignore-line
                 ...$arguments,
             );
+        } elseif ($node instanceof Node\ConditionalNode) {
+            return new Compilation\TernaryNode(
+                $this->compileNode($node->nodes['expr1']), // @phpstan-ignore-line
+                $this->compileNode($node->nodes['expr2']), // @phpstan-ignore-line
+                $this->compileNode($node->nodes['expr3']), // @phpstan-ignore-line
+            );
         } else {
-            throw new RuntimeException(
-                sprintf('Node of type "%s" is not supported yet.', get_class($node))
+            throw new Compilation\NotSupportedNode(
+                sprintf('Node of type "%s" is not supported.', get_class($node))
             );
         }
     }

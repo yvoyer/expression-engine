@@ -21,4 +21,6 @@ interface ExpressionValue
     public function toString(): string;
 
     public function toHumanReadable(): string;
+
+    public function toCompiledString(): string;
 }

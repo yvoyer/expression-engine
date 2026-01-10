@@ -10,11 +10,11 @@ final class MultiplyNodeTest extends TestCase
 {
     public function test_it_should_compile(): void
     {
-        $left = $this->createStub(ExpressionNode::class);
+        $left = self::createStub(ExpressionNode::class);
         $left
             ->method('compile')
             ->willReturn('left');
-        $right = $this->createStub(ExpressionNode::class);
+        $right = self::createStub(ExpressionNode::class);
         $right
             ->method('compile')
             ->willReturn('right');

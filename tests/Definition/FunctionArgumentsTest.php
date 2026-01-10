@@ -18,7 +18,7 @@ final class FunctionArgumentsTest extends TestCase
             new FunctionArgument(
                 'name',
                 0,
-                $value = $this->createStub(ExpressionValue::class)
+                $value = self::createStub(ExpressionValue::class),
             )
         );
         self::assertSame(
@@ -34,7 +34,7 @@ final class FunctionArgumentsTest extends TestCase
             new FunctionArgument(
                 'name',
                 0,
-                $value = $this->createStub(ExpressionValue::class)
+                $value = self::createStub(ExpressionValue::class)
             )
         );
         self::assertSame(
@@ -76,8 +76,8 @@ final class FunctionArgumentsTest extends TestCase
     {
         $arguments = FunctionArguments::fromCollection(
             'fnc',
-            new FunctionArgument('one', 1, $this->createStub(ExpressionValue::class)),
-            new FunctionArgument('two', 1, $this->createStub(ExpressionValue::class)),
+            new FunctionArgument('one', 1, self::createStub(ExpressionValue::class)),
+            new FunctionArgument('two', 1, self::createStub(ExpressionValue::class)),
         );
 
         $this->expectException(InvalidArgumentCount::class);

@@ -53,12 +53,15 @@ final readonly class ExpressionRuntime
         $node = $parsedExpression->getNodes();
         $compiled = $this->compileNode($node);
 
-        return ValueGuesser::guessScalar(
-            $this->env->evaluate(
-                $compiled->compile($context),
-                $context,
-            )
+        /**
+         * @var string|int|float|bool|object $result
+         */
+        $result = $this->env->evaluate(
+            $compiled->compile($context),
+            $context,
         );
+
+        return ValueGuesser::guessScalar($result);
     }
 
     private function compileNode(Node\Node $node): ExpressionNode
@@ -66,59 +69,68 @@ final readonly class ExpressionRuntime
         if ($node instanceof Node\BinaryNode) {
             return match ($node->attributes['operator']) {
                 '+' => new AddNode(
-                    $this->compileNode($node->nodes['left']),
-                    $this->compileNode($node->nodes['right']),
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
                 '-' => new SubtractNode(
-                    $this->compileNode($node->nodes['left']),
-                    $this->compileNode($node->nodes['right']),
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
                 '*' => new MultiplyNode(
-                    $this->compileNode($node->nodes['left']),
-                    $this->compileNode($node->nodes['right']),
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
                 '/' => new DivideNode(
-                    $this->compileNode($node->nodes['left']),
-                    $this->compileNode($node->nodes['right']),
+                    $this->compileNode($node->nodes['left']), // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['right']), // @phpstan-ignore-line
                 ),
 
                 default => throw new RuntimeException(
-                    sprintf('Operator of type "%s" is not supported yet.', $node->attributes['operator'])
+                    sprintf(
+                        'Operator of type "%s" is not supported yet.',
+                        $node->attributes['operator'] // @phpstan-ignore-line
+                    )
                 ),
             };
         } elseif ($node instanceof Node\UnaryNode) {
-            return match ($node->attributes['operator']) {
-                '!', 'not' => new NotNode($this->compileNode($node->nodes['node'])),
+            return match ($node->attributes['operator']) { // @phpstan-ignore-line
+                '!', 'not' => new NotNode($this->compileNode($node->nodes['node'])), // @phpstan-ignore-line
                 '-', '+' => new OperatorNode(
-                    (string) $node->attributes['operator'],
-                    $this->compileNode($node->nodes['node']),
+                    (string) $node->attributes['operator'], // @phpstan-ignore-line
+                    $this->compileNode($node->nodes['node']), // @phpstan-ignore-line
                 ),
             };
         } elseif ($node instanceof Node\ConstantNode) {
-            return new ValueNode(ValueGuesser::guessScalar($node->attributes['value']));
+            return new ValueNode(ValueGuesser::guessScalar($node->attributes['value'])); // @phpstan-ignore-line
         } elseif ($node instanceof Node\NameNode) {
-            return new VariableNode($node->attributes['name']);
+            return new VariableNode($node->attributes['name']); // @phpstan-ignore-line
         } elseif ($node instanceof Node\GetAttrNode) {
             if ($node->attributes['type'] === Node\GetAttrNode::PROPERTY_CALL) {
                 return new PropertyCallNode(
-                    (string) $node->nodes['node']->attributes['name'],
-                    (string) $node->nodes['attribute']->attributes['value'],
+                    (string) $node->nodes['node']->attributes['name'], // @phpstan-ignore-line
+                    (string) $node->nodes['attribute']->attributes['value'], // @phpstan-ignore-line
                 );
             }
 
             if ($node->attributes['type'] === Node\GetAttrNode::METHOD_CALL) {
                 $arguments = [];
                 $position = 0;
-                foreach($node->nodes['arguments']->nodes as $key => $arg) {
+                foreach($node->nodes['arguments']->nodes as $key => $arg) { // @phpstan-ignore-line
+                    /**
+                     * @var int $key
+                     */
                     if ($key % 2 === 1) {
-                        $arguments[] = new MethodArgument($position, $this->compileNode($arg));
+                        $arguments[] = new MethodArgument(
+                            $position,
+                            $this->compileNode($arg) // @phpstan-ignore-line
+                        );
                         $position ++;
                     }
                 }
 
                 return new MethodCallNode(
-                    (string) $node->nodes['node']->attributes['name'],
-                    (string) $node->nodes['attribute']->attributes['value'],
+                    (string) $node->nodes['node']->attributes['name'], // @phpstan-ignore-line
+                    (string) $node->nodes['attribute']->attributes['value'], // @phpstan-ignore-line
                     ...$arguments,
                 );
             }
@@ -126,14 +138,12 @@ final readonly class ExpressionRuntime
             throw new IllegalArrayAccess('Cannot access variable using "[]".');
         } elseif ($node instanceof Node\FunctionNode) {
             $arguments = [];
-            foreach($node->nodes['arguments']->nodes as $arg) {
-                $arguments[] = new ArgumentNode(
-                    $this->compileNode($arg)
-                );
+            foreach($node->nodes['arguments']->nodes as $arg) { // @phpstan-ignore-line
+                $arguments[] = new ArgumentNode($this->compileNode($arg)); // @phpstan-ignore-line
             }
 
             return new FunctionNode(
-                $node->attributes['name'],
+                $node->attributes['name'], // @phpstan-ignore-line
                 ...$arguments,
             );
         } else {

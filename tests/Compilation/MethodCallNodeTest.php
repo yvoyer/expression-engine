@@ -22,7 +22,7 @@ final class MethodCallNodeTest extends TestCase
 
     public function test_it_should_compile_with_one_arg(): void
     {
-        $arg = $this->createStub(ExpressionNode::class);
+        $arg = self::createStub(ExpressionNode::class);
         $arg->method('compile')
             ->willReturn('one');
 
@@ -38,13 +38,13 @@ final class MethodCallNodeTest extends TestCase
 
     public function test_it_should_compile_with_many_args(): void
     {
-        $one = $this->createStub(ExpressionNode::class);
+        $one = self::createStub(ExpressionNode::class);
         $one->method('compile')
             ->willReturn('one');
-        $two = $this->createStub(ExpressionNode::class);
+        $two = self::createStub(ExpressionNode::class);
         $two->method('compile')
             ->willReturn('two');
-        $three = $this->createStub(ExpressionNode::class);
+        $three = self::createStub(ExpressionNode::class);
         $three->method('compile')
             ->willReturn('three');
 

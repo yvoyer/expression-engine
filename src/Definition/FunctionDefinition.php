@@ -28,7 +28,7 @@ final class FunctionDefinition
     public function addNamedArgument(
         ArgumentDefinition $definition,
     ): self {
-        $this->arguments[] = $definition;
+        $this->arguments[$definition->getPosition()] = $definition;
 
         return $this;
     }
@@ -43,42 +43,54 @@ final class FunctionDefinition
             },
             function (
                 array $context,
-                mixed ...$arguments,
-            ): int|float|string|bool|object {
+                int|float|string|bool|object|array ...$arguments,
+            ): int|float|string|bool|object|array {
+                /**
+                 * @var array<string, string|int|float|bool|object> $context
+                 */
+                /**
+                 * @var array<int, int|float|string|bool|object|array> $arguments
+                 */
+                /**
+                 * @var array<int, FunctionArgument> $argumentObjects
+                 */
+                $argumentObjects = array_map(
+                    function (
+                        int|float|string|bool|object|array $value,
+                        int $position,
+                    ) use (
+                        $arguments,
+                    ): FunctionArgument {
+                        /**
+                         * @var int|float|string|bool|object|array<string, mixed> $value
+                         */
+
+                        if (!array_key_exists($position, $arguments)) {
+                            throw new MissingArgumentDefinition(
+                                sprintf(
+                                    'Argument "%s" of function "%s()" is not defined. ' .
+                                    'You must define it in your function declaration.',
+                                    $position,
+                                    $this->name,
+                                )
+                            );
+                        }
+
+                        return $this->arguments[$position]->createArgument(
+                            ValueGuesser::guessScalar($value)
+                        );
+                    },
+                    $arguments,
+                    array_keys($arguments),
+                );
+
                 $evaluator = $this->evaluator;
                 /**
-                 * @var int|float|string|bool|object|array<string, mixed> $result
+                 * @var int|float|string|bool|object|array<string, mixed>|null $result
                  */
                 $result = $evaluator(
-                    $context, // todo wrap in object
-                    FunctionArguments::fromCollection(
-                        $this->name,
-                        ...array_map(
-                            function (
-                                int|float|string|bool|object|array $value,
-                                int $position,
-                            ) use (
-                                $arguments,
-                            ): FunctionArgument {
-                                if (!array_key_exists($position, $arguments)) {
-                                    throw new MissingArgumentDefinition(
-                                        sprintf(
-                                            'Argument "%s" of function "%s()" is not defined. ' .
-                                            'You must define it in your function declaration.',
-                                            $position,
-                                            $this->name,
-                                        )
-                                    );
-                                }
-
-                                return $this->arguments[$position]->createArgument(
-                                    ValueGuesser::guessScalar($value)
-                                );
-                            },
-                            $arguments,
-                            array_keys($arguments),
-                        )
-                    )
+                    new FunctionContext($this->name, $context),
+                    FunctionArguments::fromCollection($this->name, ...$argumentObjects)
                 );
 
                 if (null === $result) {

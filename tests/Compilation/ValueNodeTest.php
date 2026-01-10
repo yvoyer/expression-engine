@@ -10,7 +10,7 @@ final class ValueNodeTest extends TestCase
 {
     public function test_it_should_compile(): void
     {
-        $value = $this->createStub(ExpressionValue::class);
+        $value = self::createStub(ExpressionValue::class);
         $value->method('toString')
             ->willReturn('value');
 

@@ -6,6 +6,7 @@ use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Star\Component\ExpressionEngine\Definition\ArgumentDefinition;
 use Star\Component\ExpressionEngine\Definition\FunctionArguments;
+use Star\Component\ExpressionEngine\Definition\FunctionContext;
 use Star\Component\ExpressionEngine\Definition\FunctionDefinition;
 use Star\Component\ExpressionEngine\Definition\MissingReturnValue;
 use Star\Component\ExpressionEngine\Typing\IntegerType;
@@ -37,7 +38,7 @@ final class FunctionDefinitionTest extends TestCase
             },
             function ($context, $arguments) {
                 Assert::assertCount(2, func_get_args());
-                Assert::assertIsArray($context); // todo
+                Assert::assertInstanceOf(FunctionContext::class, $context);
                 Assert::assertInstanceOf(FunctionArguments::class, $arguments);
                 Assert::assertSame(1, $arguments->getValueByPosition(0)->toInteger());
                 Assert::assertSame(2, $arguments->getValueByPosition(1)->toInteger());
@@ -74,6 +75,6 @@ final class FunctionDefinitionTest extends TestCase
 
         $this->expectException(MissingReturnValue::class);
         $this->expectExceptionMessage('Function "name()" is missing a return value.');
-        $callback();
+        $callback([]);
     }
 }

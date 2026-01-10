@@ -10,8 +10,11 @@ use function sprintf;
 
 final class ValueGuesser
 {
+    /**
+     * @param int|float|string|bool|object|array<string, mixed> $value
+     */
     public static function guessScalar(
-        string|int|float|bool|object $value,
+        int|float|string|bool|object|array $value,
     ): ExpressionValue {
         if (is_int($value)) {
             return IntegerValue::fromInteger($value);

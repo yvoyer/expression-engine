@@ -4,6 +4,7 @@ namespace Star\Component\ExpressionEngine\Functions\Math;
 
 use Star\Component\ExpressionEngine\Definition\ArgumentDefinition;
 use Star\Component\ExpressionEngine\Definition\FunctionArguments;
+use Star\Component\ExpressionEngine\Definition\FunctionContext;
 use Star\Component\ExpressionEngine\Definition\FunctionDefinition;
 use Star\Component\ExpressionEngine\Functions\ExpressionFunction;
 use Star\Component\ExpressionEngine\Typing\IntegerType;
@@ -22,7 +23,7 @@ final class DivideFunction implements ExpressionFunction
             'divide',
             function () {},
             function (
-                array $context,
+                FunctionContext $context,
                 FunctionArguments $arguments,
             ): float {
                 $arguments->assertArgumentCount(2);

@@ -16,6 +16,11 @@ final readonly class ArgumentDefinition
     ) {
     }
 
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
     public function createArgument(
         ExpressionValue $value,
     ): FunctionArgument {

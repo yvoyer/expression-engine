@@ -10,7 +10,7 @@ final class MethodArgumentTest extends TestCase
 {
     public function test_it_should_compile(): void
     {
-        $node = $this->createStub(ExpressionNode::class);
+        $node = self::createStub(ExpressionNode::class);
         $node->method('compile')
             ->willReturn('value');
 

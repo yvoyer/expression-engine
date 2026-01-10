@@ -17,14 +17,27 @@ final class DivideFunctionTest extends TestCase
     public function test_it_should_divide_by_number(): void
     {
         $this->createTester()
-            ->evaluate('divide(3, 4)')
+            ->evaluateExpression('divide(3, 4)')
             ->assertValueIsFloat(.75);
     }
 
     public function test_it_should_not_allow_division_by_zero(): void
     {
         $this->createTester()
-            ->evaluate('divide(34, 0)')
+            ->evaluateExpression('divide(34, 0)')
             ->assertValueIsFloat(0);
+    }
+
+    public function test_it_should_compile_function_to_valid_value(): void
+    {
+        $tester = $this->createTester();
+        self::assertSame(
+            '(34 / (3 === 0) ? 0 : 3)',
+            $tester->compileExpression('divide(34, 3)')
+        );
+        self::assertSame(
+            '(34 / (0 === 0) ? 0 : 0)',
+            $tester->compileExpression('divide(34, 0)')
+        );
     }
 }

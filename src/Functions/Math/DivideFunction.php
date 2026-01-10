@@ -9,6 +9,7 @@ use Star\Component\ExpressionEngine\Definition\FunctionDefinition;
 use Star\Component\ExpressionEngine\Functions\ExpressionFunction;
 use Star\Component\ExpressionEngine\Typing\IntegerType;
 use Star\Component\ExpressionEngine\Value\ValueGuesser;
+use function sprintf;
 
 /**
  * Divide a $dividend by the $divisor.
@@ -21,7 +22,17 @@ final class DivideFunction implements ExpressionFunction
     {
         return new FunctionDefinition(
             'divide',
-            function () {},
+            function (
+                string $dividend,
+                string $divisor,
+            ): string {
+                return sprintf(
+                    '(%s / (%s === 0) ? 0 : %s)',
+                    $dividend,
+                    $divisor,
+                    $divisor,
+                );
+            },
             function (
                 FunctionContext $context,
                 FunctionArguments $arguments,

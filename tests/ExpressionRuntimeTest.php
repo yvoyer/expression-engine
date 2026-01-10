@@ -18,7 +18,7 @@ final class ExpressionRuntimeTest extends TestCase
     {
         $this->createTester()
             ->withFunctions(new DivideFunction())
-            ->evaluate('(2+3)-((4*3)/2)')
+            ->evaluateExpression('(2+3)-((4*3)/2)')
             ->assertValueIsFloat(-1);
     }
 
@@ -26,21 +26,21 @@ final class ExpressionRuntimeTest extends TestCase
     {
         $this->createTester()
             ->withFunctions(new DivideFunction(), new RoundFunction())
-            ->evaluate('round(5 / 2)')
+            ->evaluateExpression('round(5 / 2)')
             ->assertValueIsInteger(3);
     }
 
     public function test_it_should_evaluate_variable(): void
     {
         $this->createTester()
-            ->evaluate('var', ['var' => 42])
+            ->evaluateExpression('var', ['var' => 42])
             ->assertValueIsInteger(42);
     }
 
     public function test_it_should_evaluate_stdclass_variable_with_property(): void
     {
         $this->createTester()
-            ->evaluate(
+            ->evaluateExpression(
                 'var.name',
                 [
                     'var' => (object) ['name' => 'Joe'],
@@ -59,7 +59,7 @@ final class ExpressionRuntimeTest extends TestCase
         };
 
         $this->createTester()
-            ->evaluate('var.name()', ['var' => $object])
+            ->evaluateExpression('var.name()', ['var' => $object])
             ->assertValueIsString('Joe');
     }
 
@@ -73,7 +73,7 @@ final class ExpressionRuntimeTest extends TestCase
         };
 
         $this->createTester()
-            ->evaluate('var.add(12)', ['var' => $object])
+            ->evaluateExpression('var.add(12)', ['var' => $object])
             ->assertValueIsInteger(22);
     }
 
@@ -90,7 +90,7 @@ final class ExpressionRuntimeTest extends TestCase
         };
 
         $this->createTester()
-            ->evaluate('var.add(3, 5, 8)', ['var' => $object])
+            ->evaluateExpression('var.add(3, 5, 8)', ['var' => $object])
             ->assertValueIsInteger(26);
     }
 
@@ -100,23 +100,23 @@ final class ExpressionRuntimeTest extends TestCase
 
         $this->expectException(IllegalArrayAccess::class);
         $this->expectExceptionMessage('Cannot access variable using "[]".');
-        $tester->evaluate('var["name"]', ['var' => ['name' => 'Joe']]);
+        $tester->evaluateExpression('var["name"]', ['var' => ['name' => 'Joe']]);
     }
 
     public function test_it_should_allow_unary(): void
     {
         $tester = $this->createTester();
         $tester
-            ->evaluate('!var', ['var' => true])
+            ->evaluateExpression('!var', ['var' => true])
             ->assertValueIsBoolean(false);
         $tester
-            ->evaluate('not var', ['var' => true])
+            ->evaluateExpression('not var', ['var' => true])
             ->assertValueIsBoolean(false);
         $tester
-            ->evaluate('-var', ['var' => 42])
+            ->evaluateExpression('-var', ['var' => 42])
             ->assertValueIsInteger(-42);
         $tester
-            ->evaluate('+-var', ['var' => -42])
+            ->evaluateExpression('+-var', ['var' => -42])
             ->assertValueIsInteger(42);
     }
 
@@ -124,7 +124,7 @@ final class ExpressionRuntimeTest extends TestCase
     {
         $this->createTester()
             ->withFunctions(new DivideFunction())
-            ->evaluate('3 / 0')
+            ->evaluateExpression('3 / 0')
             ->assertValueIsFloat(0)
         ;
     }

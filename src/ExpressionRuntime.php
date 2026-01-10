@@ -64,6 +64,18 @@ final readonly class ExpressionRuntime
         return ValueGuesser::guessScalar($result);
     }
 
+    /**
+     * @param string $expression
+     * @param array<int, string> $context
+     * @return string
+     */
+    public function compile(
+        string $expression,
+        array $context = [],
+    ): string {
+        return $this->env->compile($expression, $context);
+    }
+
     private function compileNode(Node\Node $node): ExpressionNode
     {
         if ($node instanceof Node\BinaryNode) {
@@ -115,7 +127,7 @@ final readonly class ExpressionRuntime
             if ($node->attributes['type'] === Node\GetAttrNode::METHOD_CALL) {
                 $arguments = [];
                 $position = 0;
-                foreach($node->nodes['arguments']->nodes as $key => $arg) { // @phpstan-ignore-line
+                foreach ($node->nodes['arguments']->nodes as $key => $arg) { // @phpstan-ignore-line
                     /**
                      * @var int $key
                      */
@@ -124,7 +136,7 @@ final readonly class ExpressionRuntime
                             $position,
                             $this->compileNode($arg) // @phpstan-ignore-line
                         );
-                        $position ++;
+                        $position++;
                     }
                 }
 
@@ -138,7 +150,7 @@ final readonly class ExpressionRuntime
             throw new IllegalArrayAccess('Cannot access variable using "[]".');
         } elseif ($node instanceof Node\FunctionNode) {
             $arguments = [];
-            foreach($node->nodes['arguments']->nodes as $arg) { // @phpstan-ignore-line
+            foreach ($node->nodes['arguments']->nodes as $arg) { // @phpstan-ignore-line
                 $arguments[] = new ArgumentNode($this->compileNode($arg)); // @phpstan-ignore-line
             }
 

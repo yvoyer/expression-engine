@@ -9,22 +9,22 @@ interface ExpressionValueType
     /**
      * @see BooleanType
      */
-    const string TYPE_BOOL = 'Boolean';
+    public const string TYPE_BOOL = 'Boolean';
 
     /**
      * @see IntegerType
      */
-    const string TYPE_INTEGER = 'Integer';
+    public const string TYPE_INTEGER = 'Integer';
 
     /**
      * @see FloatType
      */
-    const string TYPE_FLOAT = 'Float';
+    public const string TYPE_FLOAT = 'Float';
 
     /**
      * @see StringType
      */
-    const string TYPE_STRING = 'String';
+    public const string TYPE_STRING = 'String';
 
     public function isValidValue(ExpressionValue $value): bool;
 

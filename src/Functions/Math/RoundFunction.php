@@ -21,7 +21,7 @@ final class RoundFunction implements ExpressionFunction
     {
         return new FunctionDefinition(
             'round',
-            function (int|float $value): string {
+            function (string $value): string {
                 return sprintf('(int) round(%s)', $value);
             },
             function (

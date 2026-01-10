@@ -7,8 +7,14 @@
     <file>src</file>
     <file>tests</file>
 
-    <exclude name="PSR12.Files.FileHeader" />
-    <exclude name="PSR12.Files.OpenTag" />
+    <rule ref="PSR12.Files.FileHeader">
+        <exclude-pattern>src/*</exclude-pattern>
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+    <rule ref="PSR12.Files.OpenTag">
+        <exclude-pattern>src/*</exclude-pattern>
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
 
     <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
         <exclude-pattern>tests/*</exclude-pattern>

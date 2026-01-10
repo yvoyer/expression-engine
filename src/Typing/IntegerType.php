@@ -4,7 +4,7 @@ namespace Star\Component\ExpressionEngine\Typing;
 
 use Star\Component\ExpressionEngine\Value\ExpressionValue;
 
-final class IntegerType implements ExpressionValueType
+final readonly class IntegerType implements ExpressionValueType
 {
     public function isValidValue(ExpressionValue $value): bool
     {

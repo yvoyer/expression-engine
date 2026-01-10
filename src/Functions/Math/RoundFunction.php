@@ -15,7 +15,7 @@ use function sprintf;
  *
  * Definition: round(Integer $value): Integer
  */
-final class RoundFunction implements ExpressionFunction
+final readonly class RoundFunction implements ExpressionFunction
 {
     public function createDefinition(): FunctionDefinition
     {

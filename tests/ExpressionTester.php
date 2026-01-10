@@ -27,10 +27,12 @@ final readonly class ExpressionTester
     }
 
     /**
-     * @param array<string, int|float|string|bool|object|array<string,mixed>> $context
+     * @param array<string, int|float|string|bool|object|array<int|string,mixed>> $context
      */
-    public function evaluateExpression(string $expression, array $context = []): ResultAssertion
-    {
+    public function evaluateExpression(
+        string $expression,
+        array $context = [],
+    ): ResultAssertion {
         return new ResultAssertion(
             $this->runtime->evaluate($expression, $context),
         );
@@ -46,5 +48,10 @@ final readonly class ExpressionTester
         array $context = [],
     ): string {
         return $this->runtime->compile($expression, $context);
+    }
+
+    public static function create(): ExpressionTester
+    {
+        return new self();
     }
 }

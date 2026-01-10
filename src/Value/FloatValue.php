@@ -51,6 +51,11 @@ final readonly class FloatValue implements ExpressionValue
         return sprintf('Float(%s)', $this->value);
     }
 
+    public function toCompiledString(): string
+    {
+        return $this->toString();
+    }
+
     public static function fromFloat(float $value): ExpressionValue
     {
         return new self($value);

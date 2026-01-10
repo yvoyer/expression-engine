@@ -50,6 +50,11 @@ final readonly class IntegerValue implements ExpressionValue
         return sprintf('Integer(%s)', $this->value);
     }
 
+    public function toCompiledString(): string
+    {
+        return $this->toString();
+    }
+
     public static function fromInteger(int $value): ExpressionValue
     {
         return new self($value);

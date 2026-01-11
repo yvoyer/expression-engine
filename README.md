@@ -1,61 +1,179 @@
-# expression-engine
+# Expression Engine
 
-Expression engine based of Symfony Expression that allow type validation and strict definitions.
+Typed expression engine based on [Symfony ExpressionLanguage](https://symfony.com/doc/current/components/expression_language.html) that
+ enforces **strict type validation** and **explicit definitions**.
 
-Engine to run expression and typed function in a strict way.
+This engine is designed to safely evaluate expressions written by non-programmers while preventing implicit type
+ juggling and ambiguous behavior.
+
+---
 
 ## Installation
 
-```
+```bash
 composer install star/expression-engine
 ```
 
+---
+
 ## Usage
 
-This library uses the [SymfonyExpression](https://symfony.com/doc/current/components/expression_language.html) and
- adds typing to all the variable and functions. This allow us to ensure that provided values are strict without type juggling.
+This library adds **static typing** to:
 
-We removed some usage to only use concept that non-programmer could understand.
+- Variables
+- Operators
+- Functions arguments
+- Return values
 
-### Mathematical operations
+Expressions that violate type constraints will fail **before evaluation**.
 
-Operators:
-* `+`: Addition of numbers. ie. `12 + var + 4` (Given `var = 3`, the result would be `19`).
-* `-`: Subtraction of numbers. ie. `20 - var` (Given `var = 3`, the result would be `17`).
-* `*`: Multiplication of numbers. ie. `12 * var` (Given `var = 3`, the result would be `36`).
-* `/`: Division of numbers. ie. `12 / var` (Given `var = 3`, the result would be `4`).
+Some PHP-centric concepts were removed to keep expressions readable and safe.
 
-*Note:* Division by zero would result in `0`.
+---
 
-* `!` or `not`: Inverse operator will reverse a condition. ie. `!var` (Given `var = true`, the result would be `false`).
+## Type Notation & Keywords
 
-### Types of values
+This document uses **explicit type notation** to describe allowed operands.
 
-* Integer: A number without decimal included between `-9223372036854775808` and `9223372036854775807`.
- (*Note* we'll expand this type in the future to have unlimited size.)
-* Float: A number with decimal points. ie. `123.345`. 
-* String: A string of characters like words.
-* Boolean: A `true` of `false` value.
-* Structure: The structure is a complex object that contains properties and functions. ie. `person.age` or `person.increaseAge(2)`.
+Data types are written between `{}` to describe the **allowed type of a value** and its name for reference.
 
-### Conditions
+- `{int}`: Integer
+- `{float}`: Float
+- `{number}`: Integer or Float
+- `{string}`: String
+- `{bool}`: Boolean
+- `{scalar}`: One of `int`, `float`, `string`, `bool`
+- `{structure}`: Typed object exposing properties and methods
+- `{array}`: A collection of item of any other type
 
-* `&&`: And operator.
-* `||`: Or operator
-* `<`: Less than
-* `>`: Greater than
-* `<=`: Less equal than
-* `>=`: Greater equal than
-* `==`: Equal
-* `!=`: Not equal
-* `===`: Strict equal
-* `!==`: Strict not equal
+⚠️ Not that `{array}` and `{structure}` are **not** included in `scalar`.
 
-### Function 
+Arguments are described using a **named notation**:
 
+```
+{argumentName: type}
+```
 
+Example:
+```
+{dividend: number} / {divisor: number}
+```
 
-#### Custom function
+---
+
+## Mathematical & Logical Operations
+
+### Arithmetic Operators
+
+- `{left: number} + {right: number}`: Addition of two numbers.
+- `{left: number} - {right: number}`: Subtraction of two numbers.
+- `{left: number} * {right: number}`: Multiplication of two numbers.
+- `{dividend: number} / {divisor: number}`: Division of dividend by divisor. ⚠️  **Division by zero returns `0`.**
+- `{base: number} ** {exponent: number}`: Power operation.
+- `{value: number} % {modulo: number}`: Remainder of a division.
+- `{start: number} .. {end: number}`: Generates an inclusive numeric range.
+
+---
+
+### Comparison Operators
+
+All comparison operators return a **boolean**.
+
+- `{left: scalar} == {right: scalar}`: Strict equality (no type coercion).
+- `{left: scalar} != {right: scalar}`: Strict inequality.
+- `{left: number} > {right: number}`
+- `{left: number} >= {right: number}`
+- `{left: number} < {right: number}`
+- `{left: number} <= {right: number}`
+- `{value: scalar} in [ {scalar} ]`: Checks if a value exists in an array.
+- `{value: scalar} not in [ {scalar} ]`: Negated membership check.
+
+---
+
+### Boolean Operators
+
+Logical AND:
+- `{left: bool} && {right: bool}`
+- `{left: bool} and {right: bool}`  
+
+Logical OR:
+- `{left: bool} || {right: bool}`
+- `{left: bool} or {right: bool}`  
+
+Boolean negation:
+- `!{value: bool}`
+- `not {value: bool}`  
+
+---
+
+### String Operators
+
+- `{left: string} ~ {right: string}`: Concatenates two strings.
+- `{haystack: string} contains {needle: string}`: Checks if a string contains another string.
+- `{string: string} starts with {prefix: string}`: Checks if a string starts with a prefix.
+- `{string: string} ends with {suffix: string}`: Checks if a string ends with a suffix.
+
+---
+
+### Bitwise Operators (Integers only)
+
+- `{left: int} ^ {right: int}`: XOR
+- `{left: int} | {right: int}`: OR
+- `{left: int} & {right: int}`: AND
+- `{value: int} >> {shift: int}`: Right shift
+- `{value: int} << {shift: int}`: Left shift
+- `~ {value: int}`: Bitwise NOT
+
+---
+
+### Conditional Expression
+
+- `{condition: bool} ? {ifTrue: scalar} : {ifFalse: scalar}`: Ternary operator. Both branches must return compatible types.
+
+---
+
+### Structures, Arrays & Access
+
+- `{structure}.property`: Access a typed property.
+- `{array}[{index: int}]`: Access an array element by index.
+- `{structure}.method()`: Call a typed method.
+
+Square brackets define an **array of values**:
+
+- `[ {number} ]`: Array of numbers
+- `[ {scalar} ]`: Array of scalar values
+
+Arrays must be homogeneous unless explicitly defined otherwise.
+Array elements can be accessed using their integer index. Given `array` is an array, we can access the 4th element (Zero-index) `array[3]`.
+
+---
+
+## Supported Data Types
+
+- **Integer (`int`)**: Range: `-9223372036854775808` to `9223372036854775807` *(Unlimited precision planned in the future)*
+- **Float (`float`)**: Decimal numbers (e.g. `123.45`)
+- **String (`string`)**: Text values
+- **Boolean (`bool`)**: `true` or `false`
+- **Scalar (`scalar`)**: One of `int`, `float`, `string`, `bool`
+- **Structure (`structure`)**: Typed object with defined properties and methods.
+
+---
+
+## Functions
+
+Functions must be:
+- Explicitly registered
+- Strictly typed
+- Validated at parse time
+
+Example:
+```
+max({a: number}, {b: number})
+```
+
+Calling a function with invalid argument types or count will raise a validation error.
+
+### Custom function
 
 ```php
 use Star\Component\ExpressionEngine\ExpressionRuntime;
@@ -87,6 +205,7 @@ $engine->registerFunction(
         }
     }
 );
+
 echo $engine->evaluate(
     'ageMultiplier(4)',
     [
@@ -95,3 +214,25 @@ echo $engine->evaluate(
 )->toInteger(); // Output 92
 echo $engine->compile('ageMultiplier(4)', ['age']); // $age * 4
 ```
+---
+
+## Limits & Guarantees
+
+- ❌ No implicit type casting
+- ❌ No dynamic typing
+- ❌ No PHP-specific side effects
+- ❌ No arrays or structures in `scalar`
+- ✅ Deterministic evaluation
+- ✅ Safe for user-provided expressions
+- ✅ Early validation errors
+
+---
+
+## Design Goals
+
+- Human-readable expressions
+- Safe execution
+- Early failure on invalid input
+- Zero type ambiguity
+
+This engine is ideal for **game rules**, **configuration systems**, and **domain-specific logic**.

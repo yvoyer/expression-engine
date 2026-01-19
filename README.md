@@ -11,7 +11,18 @@ This engine is designed to safely evaluate expressions written by non-programmer
 ## Installation
 
 ```bash
-composer install star/expression-engine
+composer require star/expression-engine
+```
+
+⚠️ This package is not yet on packagist, you need to specify the url in your `composer.json`:
+
+```
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/yvoyer/expression-engine"
+        }
+    ]
 ```
 
 ---

@@ -6,7 +6,7 @@
     "require": {
         "php": ">=8.4",
         "beberlei/assert": "^3.3",
-        "symfony/expression-language": "^7.4|^8.0"
+        "symfony/expression-language": "^7.3|^8.0"
     },
     "require-dev": {
         "phpstan/extension-installer": "^1.4",
